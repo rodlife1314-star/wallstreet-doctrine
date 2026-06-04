@@ -1,0 +1,70 @@
+# Pathfinder v0.1 - Compact Serverless CPU Build and Deploy Pipeline
+# Target Repository: rodlife1314-star/Pathfinder (branch: main)
+# Pre-validates engine configurations before deploying container to Google Cloud Run.
+
+steps:
+  # Step 1: Initialize local environment checks and log current metadata
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Environment Audit'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=========================================================="
+        echo "🔷 PATHFINDER [VALIDATE-DEPLOY] PIPELINE AUDIT"
+        echo "=========================================================="
+        echo "Build Trigger: pathfinder-deploy-trigger"
+        echo "Branch: main"
+        echo "Target Zone: us-central1"
+        echo "Active Operator: rodlife1314-star"
+        echo "Timestamp: $(date -u)"
+
+  # Step 2: Validate Dockerfile.export syntax by building a lightweight CPU image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Exporter Container'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/tensorrt-edge/exporter:latest',
+      '-f', 'Dockerfile.export',
+      '.'
+    ]
+
+  # Step 3: Run static validation inside the constructed configuration
+  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/tensorrt-edge/exporter:latest'
+    id: 'Dry Run Config Check'
+    entrypoint: '/workspace/entrypoint.sh'
+    args: ['validate']
+
+  # Step 4: Build lightweight CPU-safe production container
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Pathfinder Image'
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/pathfinder/app:v0.1',
+      '-f', 'Dockerfile',
+      '.'
+    ]
+
+  # Step 5: Publish container to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Publish Pathfinder Image'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/pathfinder/app:v0.1']
+
+  # Step 6: Deploy to Google Cloud Run (Standard Serverless CPU)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy Pathfinder CPU Instance'
+    entrypoint: 'gcloud'
+    args: [
+      'run', 'deploy', 'pathfinder-service',
+      '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/pathfinder/app:v0.1',
+      '--region', 'us-central1',
+      '--port', '8080',
+      '--ingress', 'all',
+      '--allow-unauthenticated',
+      '--cpu', '1',
+      '--memory', '1Gi',
+      '--platform', 'managed',
+      '--set-secrets', 'FIREBASE_SERVICE_ACCOUNT=firebase-service-account:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest'
+    ]
+
+timeout: '1200s'

@@ -1,0 +1,329 @@
+{
+  "apps": [
+    {
+      "name": "Pathfinder Intelligence Portal",
+      "path": "/",
+      "purpose": "Primary user control surface, intelligence intake cockpit, and chain of custody visualization",
+      "framework": "React v18, Vite, Tailwind CSS v4",
+      "language": "TypeScript / JSX",
+      "entryPoint": "src/main.tsx",
+      "buildScript": "vite build",
+      "devScript": "tsx server.ts",
+      "deployScript": "gcloud run deploy"
+    }
+  ],
+  "packages": [
+    {
+      "name": "Jemma Tenzor Compliance & Validation",
+      "path": "src/jemma_tenzor",
+      "purpose": "Contains validation script engines, architecture maps, and environment compliance schemas matching Triton requirements",
+      "framework": "Standalone Python Modules & PyTest scripts",
+      "language": "Python / Shell Scripting",
+      "entryPoint": "src/jemma_tenzor/validation/model_manifest_validation.py"
+    }
+  ],
+  "uiTabs": [
+    {
+      "label": "👨‍✈️ OPERATOR",
+      "componentName": "OperatorControlSurface",
+      "sourceFilePath": "src/App.tsx",
+      "hasActionButtons": true,
+      "actionsCallApi": true,
+      "notes": "Handles intake formulation, double verification triggers, operator approval signing"
+    },
+    {
+      "label": "📐 ARCHITECT",
+      "componentName": "ArchitectSovereignCatalogue",
+      "sourceFilePath": "src/App.tsx",
+      "hasActionButtons": true,
+      "actionsCallApi": false,
+      "notes": "Allows search filter exploration across decoupled databases directories and direct routing injection"
+    },
+    {
+      "label": "🔧 ENGINEER",
+      "componentName": "EngineeringDiagnosticConsole",
+      "sourceFilePath": "src/App.tsx",
+      "hasActionButtons": true,
+      "actionsCallApi": false,
+      "notes": "Provides static build specifications code-copy blocks, focused workspace paths logs"
+    },
+    {
+      "label": "📂 ARCHIVE v1",
+      "componentName": "PacketArchiveDashboard",
+      "sourceFilePath": "src/App.tsx",
+      "hasActionButtons": true,
+      "actionsCallApi": true,
+      "notes": "Visualizes lineage parent-child topology branches, exports packet findings to Markdown/JSON"
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "method": "GET",
+      "route": "/api/health",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Verifies basic cluster uptime state",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/packets",
+      "sourceFile": "server.ts",
+      "handlerName": "getPacketsList",
+      "purpose": "Scans and indexes active packets history records",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/packets/:packetId",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Retrieves the core data profile of a single packet",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/packets/:packetId/lineage",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Traces full parent-child lineage vectors",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/packets/:packetId/export",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Serializes audit records to markdown / JSON files",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/doctrine",
+      "sourceFile": "server.ts",
+      "handlerName": "getDoctrineList",
+      "purpose": "Fetches active governance routing tables",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/credentials/status",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Scans verification statuses across APIs and exchanges",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/audit",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Aggregates indices counts for the database monitor",
+      "mutatesState": false
+    },
+    {
+      "method": "GET",
+      "route": "/api/copilot/messages",
+      "sourceFile": "server.ts",
+      "handlerName": "getCopilotMessages",
+      "purpose": "Retrieves message logs between operator and copilot",
+      "mutatesState": false
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Forms a new economic Challenge/Claim intake packet",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/begin-validation",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Moves packet from intake to verification sequence",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/verdict",
+      "sourceFile": "server.ts",
+      "handlerName": "saveValidationReview",
+      "purpose": "Applies Jemma or Red Team validation signature stamps",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/approve",
+      "sourceFile": "server.ts",
+      "handlerName": "saveOperatorApproval",
+      "purpose": "Signs off packet via explicit manual override",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/seal",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Locks verification and seals evidence signatures",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/deploy",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Launches serverless GPU compilation or dry-runs",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/resolve-ambiguity",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Unlocks sub-threshold confidence conditions",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/packets/toggle-ambiguity",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Amends ambiguity locks terms sets directly",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/copilot",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Dispatches prompt to Gemini assistance grounded in current packet details",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/doctrine",
+      "sourceFile": "server.ts",
+      "handlerName": "saveDoctrineAuthority",
+      "purpose": "Appends database sourcing governance registries",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/credentials/cme",
+      "sourceFile": "server.ts",
+      "handlerName": "saveCmeCredentials",
+      "purpose": "Registers secure connection variables for CME options portal",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/credentials/cme/test",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Tests connection verification loops for CME",
+      "mutatesState": true
+    },
+    {
+      "method": "POST",
+      "route": "/api/credentials/trai/test",
+      "sourceFile": "server.ts",
+      "handlerName": "anonymous",
+      "purpose": "Triggers TRAI validation handshake",
+      "mutatesState": false
+    },
+    {
+      "method": "DELETE",
+      "route": "/api/copilot/messages",
+      "sourceFile": "server.ts",
+      "handlerName": "clearCopilotMessages",
+      "purpose": "Resets the active copilot chat dialog thread",
+      "mutatesState": true
+    }
+  ],
+  "domainModules": [
+    {
+      "name": "Custody Packet Ledger",
+      "relatedFiles": [
+        "src/types.ts",
+        "server.ts",
+        "src/App.tsx"
+      ],
+      "purpose": "Standardizes metadata tracking for task objectives and verification ladders"
+    },
+    {
+      "name": "Sovereign Sourcing Registries & Gov Doctrine",
+      "relatedFiles": [
+        "server.ts",
+        "src/App.tsx"
+      ],
+      "purpose": "Defines credential rules and licensing bounds across macroeconomic database nodes (FRED, BLS, SEC, CME)"
+    },
+    {
+      "name": "Crystal Bridge Protocol",
+      "relatedFiles": [
+        "src/crystal_bridge.ts",
+        "src/App.tsx"
+      ],
+      "purpose": "Assembles abstract intelligence findings into deterministic serverless deployment contracts"
+    },
+    {
+      "name": "Pluggable AI Reasoners Diagnostics",
+      "relatedFiles": [
+        "src/crystal_bridge.ts",
+        "src/App.tsx"
+      ],
+      "purpose": "Interchangeable reasoning agents evaluating mathematical models skew curves"
+    }
+  ],
+  "redTeamStatus": {
+    "isRealTab": false,
+    "hasDedicatedComponent": false,
+    "apiHasDedicatedRunner": false,
+    "apiHasDedicatedVerificationSigner": false,
+    "initialClearedStateIsMocked": true,
+    "verificationPayload": {
+      "reviewType": "RED_TEAM",
+      "reviewer": "Operator Red Team Core",
+      "verdict": "CLEARED"
+    },
+    "requiredFileChangesToOperationalize": [
+      "src/App.tsx",
+      "server.ts"
+    ]
+  },
+  "outputReasoningStatus": {
+    "isOperational": true,
+    "interactiveChoiceSelectorPresent": true,
+    "reasonersConnected": [
+      "Gemini Reasoner",
+      "Claude-style Validator",
+      "DeepSeek Reasoner",
+      "Qwen Reasoner",
+      "Local Reasoner"
+    ],
+    "citationReference": "src/crystal_bridge.ts:286-402, src/App.tsx:7113-7250"
+  },
+  "crystalBridgeStatus": {
+    "isDecoupled": true,
+    "currentAdapterName": "OctagonComputeRuntimeAdapter",
+    "supportedHardware": [
+      "nvidia-l4",
+      "nvidia-t4",
+      "nvidia-a100"
+    ],
+    "supportedPrecisions": [
+      "fp16",
+      "int8",
+      "int4"
+    ],
+    "citationReference": "src/crystal_bridge.ts:1-285"
+  },
+  "custodyPacketStatus": {
+    "durablePersistencePlatform": "Google Cloud Firestore (Admin/Client SDK)",
+    "localMemoryFallbackActive": true,
+    "stateEnforcementTransitionLockActive": true,
+    "citationReference": "server.ts:21-270, server.ts:581-641"
+  }
+}

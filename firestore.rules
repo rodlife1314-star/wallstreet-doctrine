@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Safety Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Stand-alone validation helpers (Eight Pillars)
+    function isValidPacket(p) {
+      return p.packet_id is string && p.packet_id.size() <= 128
+        && p.source_agent is string && p.source_agent.size() <= 256
+        && p.challenge is string && p.challenge.size() <= 4096
+        && p.dataset_recommendations is list
+        && p.authority_chain is list
+        && p.jemma_verdict is string && p.jemma_verdict.size() <= 64
+        && p.red_team_verdict is string && p.red_team_verdict.size() <= 64
+        && p.operator_gate is string && p.operator_gate.size() <= 64
+        && p.current_status is string && p.current_status.size() <= 128
+        && p.next_allowed_action is string && p.next_allowed_action.size() <= 256
+        && p.get('confidence', 0) is number
+        && p.dataset_recommendations.size() <= 50
+        && (p.dataset_recommendations.size() == 0 || p.dataset_recommendations[0] is string)
+        && p.authority_chain.size() <= 50
+        && (p.authority_chain.size() == 0 || p.authority_chain[0] is string)
+        && p.get('history', []) is list
+        && p.get('history', []).size() <= 100
+        && (p.get('history', []).size() == 0 || (
+             p.get('history', [])[0].event_id is string &&
+             p.get('history', [])[0].timestamp is string &&
+             p.get('history', [])[0].old_status is string &&
+             p.get('history', [])[0].new_status is string &&
+             p.get('history', [])[0].actor is string
+           ));
+    }
+
+    function isValidCandidate(c) {
+      return c.id is string && c.id.size() <= 128
+        && c.packetId is string && c.packetId.size() <= 128
+        && c.url is string && c.url.size() <= 2048
+        && c.status is string && c.status.size() <= 128
+        && c.createdAt is string && c.createdAt.size() <= 128
+        && (c.get('datasetId', '') is string && c.get('datasetId', '').size() <= 128)
+        && (c.get('name', '') is string && c.get('name', '').size() <= 256);
+    }
+
+    function isValidReview(r) {
+      return r.id is string && r.id.size() <= 128
+        && r.packetId is string && r.packetId.size() <= 128
+        && r.reviewType is string && r.reviewType.size() <= 64
+        && r.verdict is string && r.verdict.size() <= 64
+        && r.reason is string && r.reason.size() <= 4096
+        && r.reviewer is string && r.reviewer.size() <= 128
+        && r.createdAt is string && r.createdAt.size() <= 128;
+    }
+
+    function isValidApproval(a) {
+      return a.id is string && a.id.size() <= 128
+        && a.packetId is string && a.packetId.size() <= 128
+        && a.operatorId is string && a.operatorId.size() <= 128
+        && a.sealStatus is string && a.sealStatus.size() <= 64
+        && a.timestamp is string && a.timestamp.size() <= 128;
+    }
+
+    // Blueprint for economic credential authority class in the Pathfinder governance doctrine
+    function isValidDoctrine(d) {
+      return d.authority is string && d.authority.size() <= 128
+        && d.category is string && d.category.size() <= 128
+        && d.status is string && d.status.size() <= 128
+        && d.role is string && d.role.size() <= 256
+        && d.description is string && d.description.size() <= 4096;
+    }
+
+    function isValidCopilotMessage(m) {
+      return m.id is string && m.id.size() <= 128
+        && m.sender is string && m.sender.size() <= 64
+        && m.text is string && m.text.size() <= 16384
+        && m.timestamp is string && m.timestamp.size() <= 128
+        && m.createdAt is number;
+    }
+
+    function isValidCmeCredential(c) {
+      return c.id is string && c.id.size() <= 128
+        && c.username is string && c.username.size() <= 256
+        && c.password is string && c.password.size() <= 512;
+    }
+
+    // 3. Custody Packets Collection
+    match /custody_packets/{packetId} {
+      allow read: if true; // Publicly readable for cockpit dashboard visibility
+      allow create, update: if isValidId(packetId) && isValidPacket(request.resource.data);
+      allow delete: if false; // Immutable audit ledger
+    }
+
+    // 4. Dataset Candidates Collection
+    match /dataset_candidates/{candidateId} {
+      allow read: if true;
+      allow create, update: if isValidId(candidateId) && isValidCandidate(request.resource.data);
+      allow delete: if false;
+    }
+
+    // 5. Validation Reviews Collection
+    match /validation_reviews/{reviewId} {
+      allow read: if true;
+      allow create, update: if isValidId(reviewId) && isValidReview(request.resource.data);
+      allow delete: if false;
+    }
+
+    // 6. Operator Approvals Collection
+    match /operator_approvals/{approvalId} {
+      allow read: if true;
+      allow create, update: if isValidId(approvalId) && isValidApproval(request.resource.data);
+      allow delete: if false;
+    }
+
+    // 7. Authority Doctrine Collection
+    // Loosened for client-paths on purpose (e.g. database seeding) with strict structural schema validation
+    match /authority_doctrine/{authorityId} {
+      allow read: if true;
+      allow create, update: if isValidId(authorityId) && isValidDoctrine(request.resource.data);
+      allow delete: if isValidId(authorityId);
+    }
+
+    // 8. Copilot Chat Messages Collection
+    match /copilot_messages/{messageId} {
+      allow read: if true;
+      allow create, update: if isValidId(messageId) && isValidCopilotMessage(request.resource.data);
+      allow delete: if true;
+    }
+
+    // 9. CME Credentials Collection
+    match /cme_credentials/{credentialId} {
+      allow read: if true;
+      allow write: if isValidId(credentialId) && isValidCmeCredential(request.resource.data);
+    }
+  }
+}
