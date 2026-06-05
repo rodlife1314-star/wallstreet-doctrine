@@ -242,6 +242,247 @@
         "username",
         "password"
       ]
+    },
+    "asset_profile": {
+      "title": "AssetProfile",
+      "description": "Asset-specific behavior rules, preferences, and dynamic probability weights.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "preferredSessions": {
+          "type": "array"
+        },
+        "failedSetupsCount": {
+          "type": "number"
+        },
+        "successfulConfluencesCount": {
+          "type": "number"
+        },
+        "diNapoliFibResponseWeight": {
+          "type": "number"
+        },
+        "macroDrivers": {
+          "type": "array"
+        },
+        "liquidityHabits": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "custody_timeframe_state": {
+      "title": "CustodyTimeframeState",
+      "description": "Hierarchical timeframe states representing the D1 -> H4 -> M15 -> M5 sequence.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "string"
+        },
+        "timeframe": {
+          "type": "string",
+          "enum": ["D1", "H4", "M15", "M5"]
+        },
+        "role": {
+          "type": "string"
+        },
+        "authorityWeight": {
+          "type": "number"
+        },
+        "currentFinding": {
+          "type": "string"
+        },
+        "invalidationLine": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "assetId",
+        "timeframe"
+      ]
+    },
+    "pattern_registry_entry": {
+      "title": "PatternRegistryEntry",
+      "description": "Cross-asset execution and behavioral tracking patterns in the lattice.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "enum": ["X-Break Redistribution", "ABCD Paddle", "382 Trap", "618 Continuation", "Order Block Mitigation", "Vector Candle Trap"]
+        },
+        "asset": {
+          "type": "string"
+        },
+        "timeframe": {
+          "type": "string"
+        },
+        "session": {
+          "type": "string"
+        },
+        "entryCondition": {
+          "type": "string"
+        },
+        "invalidation": {
+          "type": "number"
+        },
+        "target": {
+          "type": "number"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["SUCCESS", "FAILURE"]
+        },
+        "lesson": {
+          "type": "string"
+        },
+        "probabilityWeight": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "asset",
+        "outcome"
+      ]
+    },
+    "macro_context_snapshot": {
+      "title": "MacroContextSnapshot",
+      "description": "Global macroeconomic conditions backdrop snapshots.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "yieldCurveStatus": {
+          "type": "string"
+        },
+        "dxyTrend": {
+          "type": "string"
+        },
+        "vixValue": {
+          "type": "number"
+        },
+        "fedPolicyBias": {
+          "type": "string"
+        },
+        "newsEventImpact": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "timestamp"
+      ]
+    },
+    "outcome_feedback_item": {
+      "title": "OutcomeFeedbackItem",
+      "description": "Feedback loops storing prediction vs actual outputs to prevent cognitive drift.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "patternId": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "predictedBias": {
+          "type": "string"
+        },
+        "actualOutcome": {
+          "type": "string"
+        },
+        "deviation": {
+          "type": "number"
+        },
+        "weightAdjustmentApplied": {
+          "type": "number"
+        },
+        "unsolicitedNotes": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "patternId",
+        "asset",
+        "actualOutcome"
+      ]
+    },
+    "operator_override": {
+      "title": "OperatorOverride",
+      "description": "Sovereign manual override ledger signed inside the WallStreet cockpit.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "timeframe": {
+          "type": "string"
+        },
+        "overrideReason": {
+          "type": "string"
+        },
+        "approvedByOperator": {
+          "type": "boolean"
+        },
+        "sealSignature": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "asset",
+        "approvedByOperator"
+      ]
     }
   },
   "firestore": {
@@ -272,6 +513,30 @@
     "cme_credentials/{credentialId}": {
       "schema": "cme_credential",
       "description": "Securely registered federated CME Group credentials"
+    },
+    "asset_profiles/{assetId}": {
+      "schema": "asset_profile",
+      "description": "Lattice profile parameters for specific instruments."
+    },
+    "custody_timeframe_states/{stateId}": {
+      "schema": "custody_timeframe_state",
+      "description": "Timeframe state blocks representing hierarchies of influence."
+    },
+    "pattern_registry/{entryId}": {
+      "schema": "pattern_registry_entry",
+      "description": "Dynamic registered behavior and trading patterns across assets."
+    },
+    "macro_context_snapshots/{snapshotId}": {
+      "schema": "macro_context_snapshot",
+      "description": "Contextual macro overlays mapped contextually."
+    },
+    "outcome_feedback/{feedbackId}": {
+      "schema": "outcome_feedback_item",
+      "description": "Lattice tracking parameters adjusting probabilistics automatically."
+    },
+    "operator_overrides/{overrideId}": {
+      "schema": "operator_override",
+      "description": "Sovereign signature tracking override data on the ledger"
     }
   }
 }

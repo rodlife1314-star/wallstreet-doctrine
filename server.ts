@@ -26,6 +26,12 @@ interface LocalStore {
   doctrine: Record<string, any>;
   copilot_messages: Record<string, any>;
   cme_credentials: Record<string, any>;
+  asset_profiles: Record<string, any>;
+  custody_timeframe_states: Record<string, any>;
+  pattern_registry: Record<string, any>;
+  macro_context_snapshots: Record<string, any>;
+  outcome_feedback: Record<string, any>;
+  operator_overrides: Record<string, any>;
 }
 
 const fallbackStore: LocalStore = {
@@ -263,10 +269,226 @@ const fallbackStore: LocalStore = {
       allowedAction: "recommendation_only",
       autoIngest: false,
       requiresOperatorGate: true
+    },
+    "FIREBASE_SDK": {
+      authority: "FIREBASE_SDK",
+      category: "CLOUD_INFRASTRUCTURE",
+      status: "ACTIVE_OBSERVE",
+      role: "Firebase SDK & Runtime Reference Library",
+      description: "Sovereign runtime compatibility, SDK roadmap, and service integration patterns. Acts as a key system navigation chart for Cloud Services.",
+      sourceType: "sdk_reference",
+      accessMethod: "webpage",
+      allowedAction: "verification_only",
+      autoIngest: false,
+      requiresOperatorGate: true,
+      domain: "Cloud Infrastructure",
+      url: "https://firebase.google.com/docs/libraries"
+    },
+    "CANVA": {
+      authority: "CANVA",
+      category: "CRYSTAL_BRIDGE_DESTINATION",
+      status: "ACTIVE_RESEARCH",
+      role: "Canva Developer Platform",
+      description: "Official Canva Connect API & Apps SDK. Supports programmatically creating/exporting designs, template autofill, and asset synchronization across Pathfinder layers.",
+      sourceType: "integration_destination",
+      accessMethod: "webpage_or_api",
+      allowedAction: "verification_only",
+      autoIngest: false,
+      requiresOperatorGate: true,
+      domain: "Presentation Infrastructure",
+      url: "https://www.canva.dev/"
     }
   },
   copilot_messages: {},
-  cme_credentials: {}
+  cme_credentials: {},
+  asset_profiles: {
+    "GC": {
+      id: "GC",
+      name: "Gold Futures",
+      preferredSessions: ["London", "New York"],
+      failedSetupsCount: 2,
+      successfulConfluencesCount: 14,
+      diNapoliFibResponseWeight: 0.85,
+      macroDrivers: ["Real Yields", "DXY", "Fed Funds Rate", "Geopolitics"],
+      liquidityHabits: "Frequent London session range sweeps before major New York breakouts.",
+      updatedAt: new Date().toISOString()
+    },
+    "BTC": {
+      id: "BTC",
+      name: "Bitcoin Spot",
+      preferredSessions: ["London/NY Overlap", "Asian Close"],
+      failedSetupsCount: 6,
+      successfulConfluencesCount: 22,
+      diNapoliFibResponseWeight: 0.72,
+      macroDrivers: ["Global Liquidity", "M2", "SEC Stablecoin Velocity"],
+      liquidityHabits: "High density of weekend liquidity sweeps; classic order block mitigations at round numbers.",
+      updatedAt: new Date().toISOString()
+    },
+    "NQ": {
+      id: "NQ",
+      name: "Nasdaq 100 Futures",
+      preferredSessions: ["New York Open"],
+      failedSetupsCount: 4,
+      successfulConfluencesCount: 19,
+      diNapoliFibResponseWeight: 0.78,
+      macroDrivers: ["10Y Yield", "Mega-cap Earnings", "VIX skew"],
+      liquidityHabits: "Aggressive morning session silver bullet expansions; high mitigation fidelity on 15m order blocks.",
+      updatedAt: new Date().toISOString()
+    },
+    "YM": {
+      id: "YM",
+      name: "Dow Jones Futures",
+      preferredSessions: ["New York Open"],
+      failedSetupsCount: 1,
+      successfulConfluencesCount: 11,
+      diNapoliFibResponseWeight: 0.80,
+      macroDrivers: ["Industrial PMI", "Yield Spreads", "Value Rotation"],
+      liquidityHabits: "Slower expansion phases; deep Fibonacci retracements with high reaction accuracy.",
+      updatedAt: new Date().toISOString()
+    }
+  },
+  custody_timeframe_states: {
+    "GC-D1": {
+      id: "GC-D1",
+      assetId: "GC",
+      timeframe: "D1",
+      role: "bias memory",
+      authorityWeight: 1.0,
+      currentFinding: "Strong bullish expansion sequence active. D1 impulse leg established from $1980 to $2430.",
+      invalidationLine: 1980.0,
+      updatedAt: new Date().toISOString()
+    },
+    "GC-H4": {
+      id: "GC-H4",
+      assetId: "GC",
+      timeframe: "H4",
+      role: "structure memory",
+      authorityWeight: 0.8,
+      currentFinding: "Bullish order block mitigation complete at $2280. Establishing higher low consolidation.",
+      invalidationLine: 2280.0,
+      updatedAt: new Date().toISOString()
+    },
+    "GC-M15": {
+      id: "GC-M15",
+      assetId: "GC",
+      timeframe: "M15",
+      role: "setup memory",
+      authorityWeight: 0.4,
+      currentFinding: "382 Trap pattern identified. Liquidity sweep of prior session low at $2310 occurs under high volume.",
+      invalidationLine: 2305.0,
+      updatedAt: new Date().toISOString()
+    },
+    "GC-M5": {
+      id: "GC-M5",
+      assetId: "GC",
+      timeframe: "M5",
+      role: "trigger memory",
+      authorityWeight: 0.1,
+      currentFinding: "Confirmation witness layer: Vector candle trap validated. Shift in market structure to upside, confirming sequence arrival.",
+      invalidationLine: 2310.0,
+      updatedAt: new Date().toISOString()
+    },
+    "NQ-D1": {
+      id: "NQ-D1",
+      assetId: "NQ",
+      timeframe: "D1",
+      role: "bias memory",
+      authorityWeight: 1.0,
+      currentFinding: "Bearish correction from record highs. Weekly displacement downward into H4 premium supply.",
+      invalidationLine: 18500.0,
+      updatedAt: new Date().toISOString()
+    },
+    "NQ-H4": {
+      id: "NQ-H4",
+      assetId: "NQ",
+      timeframe: "H4",
+      role: "structure memory",
+      authorityWeight: 0.8,
+      currentFinding: "Mitigation of D1 Fair Value Gap complete near $17600. Bearish structure remains intact.",
+      invalidationLine: 18100.0,
+      updatedAt: new Date().toISOString()
+    }
+  },
+  pattern_registry: {
+    "pat-gc-xbreak": {
+      id: "pat-gc-xbreak",
+      name: "X-Break Redistribution",
+      asset: "GC",
+      timeframe: "H4",
+      session: "London",
+      entryCondition: "Displacement below H4 liquidity sweep high followed by market structure shift.",
+      invalidation: 2355.0,
+      target: 2280.0,
+      outcome: "SUCCESS",
+      lesson: "Patience required to allow full London sweep before thesis commitment.",
+      probabilityWeight: 0.84,
+      createdAt: new Date().toISOString()
+    },
+    "pat-btc-382": {
+      id: "pat-btc-382",
+      name: "382 Trap",
+      asset: "BTC",
+      timeframe: "M15",
+      session: "New York",
+      entryCondition: "Rapid liquidation wick to DiNapoli 38.2% retracement line, followed by rapid absorption.",
+      invalidation: 61800.0,
+      target: 65200.0,
+      outcome: "SUCCESS",
+      lesson: "Do not chase the breakout; set limit orders directly at the 38.2% confluence density.",
+      probabilityWeight: 0.79,
+      createdAt: new Date().toISOString()
+    },
+    "pat-nq-vector": {
+      id: "pat-nq-vector",
+      name: "Vector Candle Trap",
+      asset: "NQ",
+      timeframe: "M5",
+      session: "New York Open",
+      entryCondition: "Three consecutive high-velocity volume impulses sweeping prior H1 swing low.",
+      invalidation: 17480.0,
+      target: 17750.0,
+      outcome: "FAILURE",
+      lesson: "Macro GDP release violated local structure; avoid M5 trigger when volatility index is rising fast.",
+      probabilityWeight: 0.58,
+      createdAt: new Date().toISOString()
+    }
+  },
+  macro_context_snapshots: {
+    "macro-001": {
+      id: "macro-001",
+      timestamp: new Date().toISOString(),
+      yieldCurveStatus: "Inverted (Decompression Phase)",
+      dxyTrend: "Sustained Bullish Channel",
+      vixValue: 16.4,
+      fedPolicyBias: "Restrictive hawkish hold with structural cut constraints",
+      newsEventImpact: "Non-Farm Payrolls upcoming; high volatility expected across assets.",
+      createdAt: new Date().toISOString()
+    }
+  },
+  outcome_feedback: {
+    "fb-001": {
+      id: "fb-001",
+      patternId: "pat-gc-xbreak",
+      asset: "GC",
+      predictedBias: "BULLISH",
+      actualOutcome: "SUCCESS",
+      deviation: 0.05,
+      weightAdjustmentApplied: 0.03,
+      unsolicitedNotes: "Very smooth NY session expansion that perfectly validated the weekly D1 context bias.",
+      createdAt: new Date().toISOString()
+    }
+  },
+  operator_overrides: {
+    "override-001": {
+      id: "override-001",
+      asset: "NQ",
+      timeframe: "D1",
+      overrideReason: "Forced shift to cash mandate due to geopolitical events overriding local structure indicators.",
+      approvedByOperator: true,
+      sealSignature: "OP-SEAL-8891-ROD-SOVEREIGN",
+      timestamp: new Date().toISOString()
+    }
+  }
 };
 
 let registeredCmeCredentials = {
@@ -495,6 +717,18 @@ async function dbGetDocs(collectionName: string): Promise<any[]> {
         return Object.values(fallbackStore.copilot_messages);
       } else if (collectionName === "cme_credentials") {
         return Object.values(fallbackStore.cme_credentials);
+      } else if (collectionName === "asset_profiles") {
+        return Object.values(fallbackStore.asset_profiles);
+      } else if (collectionName === "custody_timeframe_states") {
+        return Object.values(fallbackStore.custody_timeframe_states);
+      } else if (collectionName === "pattern_registry") {
+        return Object.values(fallbackStore.pattern_registry);
+      } else if (collectionName === "macro_context_snapshots") {
+        return Object.values(fallbackStore.macro_context_snapshots);
+      } else if (collectionName === "outcome_feedback") {
+        return Object.values(fallbackStore.outcome_feedback);
+      } else if (collectionName === "operator_overrides") {
+        return Object.values(fallbackStore.operator_overrides);
       }
       return [];
     }
@@ -528,6 +762,18 @@ async function dbSetDoc(collectionName: string, docId: string, data: any): Promi
         fallbackStore.copilot_messages[docId] = data;
       } else if (collectionName === "cme_credentials") {
         fallbackStore.cme_credentials[docId] = data;
+      } else if (collectionName === "asset_profiles") {
+        fallbackStore.asset_profiles[docId] = data;
+      } else if (collectionName === "custody_timeframe_states") {
+        fallbackStore.custody_timeframe_states[docId] = data;
+      } else if (collectionName === "pattern_registry") {
+        fallbackStore.pattern_registry[docId] = data;
+      } else if (collectionName === "macro_context_snapshots") {
+        fallbackStore.macro_context_snapshots[docId] = data;
+      } else if (collectionName === "outcome_feedback") {
+        fallbackStore.outcome_feedback[docId] = data;
+      } else if (collectionName === "operator_overrides") {
+        fallbackStore.operator_overrides[docId] = data;
       }
     }
   } catch (err: any) {
@@ -552,6 +798,18 @@ async function dbDeleteDoc(collectionName: string, docId: string): Promise<void>
         delete fallbackStore.cme_credentials[docId];
       } else if (collectionName === "authority_doctrine") {
         delete fallbackStore.doctrine[docId];
+      } else if (collectionName === "asset_profiles") {
+        delete fallbackStore.asset_profiles[docId];
+      } else if (collectionName === "custody_timeframe_states") {
+        delete fallbackStore.custody_timeframe_states[docId];
+      } else if (collectionName === "pattern_registry") {
+        delete fallbackStore.pattern_registry[docId];
+      } else if (collectionName === "macro_context_snapshots") {
+        delete fallbackStore.macro_context_snapshots[docId];
+      } else if (collectionName === "outcome_feedback") {
+        delete fallbackStore.outcome_feedback[docId];
+      } else if (collectionName === "operator_overrides") {
+        delete fallbackStore.operator_overrides[docId];
       }
     }
   } catch (err: any) {
@@ -792,6 +1050,20 @@ async function getDoctrineList(): Promise<any[]> {
       const nvDoc = fallbackStore.doctrine["NVIDIA_BUILD"];
       await dbSetDoc("authority_doctrine", nvDoc.authority, nvDoc);
       docs.push(nvDoc);
+    }
+    // Ensure FIREBASE_SDK is present in persistent list
+    const hasFirebase = docs.some((d: any) => d.authority === "FIREBASE_SDK" || d.authority === "FIREBASE_LIBRARIES" || d.authority === "Firebase SDK");
+    if (!hasFirebase) {
+      const fbDoc = fallbackStore.doctrine["FIREBASE_SDK"];
+      await dbSetDoc("authority_doctrine", fbDoc.authority, fbDoc);
+      docs.push(fbDoc);
+    }
+    // Ensure CANVA is present in persistent list
+    const hasCanva = docs.some((d: any) => d.authority === "CANVA" || d.authority === "Canva" || d.authority === "Canva Developer Platform");
+    if (!hasCanva) {
+      const canvaDoc = fallbackStore.doctrine["CANVA"];
+      await dbSetDoc("authority_doctrine", canvaDoc.authority, canvaDoc);
+      docs.push(canvaDoc);
     }
     return docs;
   } catch (err: any) {
@@ -2422,6 +2694,213 @@ app.post("/api/credentials/trai/test", async (req, res) => {
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || "TRAI Gateway validation exception encountered" });
+  }
+});
+
+// ==============================================================================
+// CUSTODY MARKET LATTICE API ENDPOINTS
+// ==============================================================================
+
+// 1. Asset Profiles
+app.get("/api/lattice/asset-profiles", async (req, res) => {
+  try {
+    const list = await dbGetDocs("asset_profiles");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch asset profiles" });
+  }
+});
+
+app.post("/api/lattice/asset-profiles", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.name) {
+      return res.status(400).json({ error: "Missing required fields: id, name" });
+    }
+    const record = {
+      id: data.id,
+      name: data.name,
+      preferredSessions: data.preferredSessions || [],
+      failedSetupsCount: Number(data.failedSetupsCount) || 0,
+      successfulConfluencesCount: Number(data.successfulConfluencesCount) || 0,
+      diNapoliFibResponseWeight: Number(data.diNapoliFibResponseWeight) || 0.5,
+      macroDrivers: data.macroDrivers || [],
+      liquidityHabits: data.liquidityHabits || "",
+      updatedAt: new Date().toISOString()
+    };
+    await dbSetDoc("asset_profiles", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save asset profile" });
+  }
+});
+
+// 2. Custody Timeframe States
+app.get("/api/lattice/timeframe-states", async (req, res) => {
+  try {
+    const list = await dbGetDocs("custody_timeframe_states");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch custody timeframe states" });
+  }
+});
+
+app.post("/api/lattice/timeframe-states", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.assetId || !data.timeframe) {
+      return res.status(400).json({ error: "Missing required fields: id, assetId, timeframe" });
+    }
+    const record = {
+      id: data.id,
+      assetId: data.assetId,
+      timeframe: data.timeframe,
+      role: data.role || "",
+      authorityWeight: Number(data.authorityWeight) || 0.0,
+      currentFinding: data.currentFinding || "",
+      invalidationLine: Number(data.invalidationLine) || 0.0,
+      updatedAt: new Date().toISOString()
+    };
+    await dbSetDoc("custody_timeframe_states", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save timeframe state" });
+  }
+});
+
+// 3. Pattern Registry
+app.get("/api/lattice/patterns", async (req, res) => {
+  try {
+    const list = await dbGetDocs("pattern_registry");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch pattern registry" });
+  }
+});
+
+app.post("/api/lattice/patterns", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.name || !data.asset || !data.outcome) {
+      return res.status(400).json({ error: "Missing required fields: id, name, asset, outcome" });
+    }
+    const record = {
+      id: data.id,
+      name: data.name,
+      asset: data.asset,
+      timeframe: data.timeframe || "",
+      session: data.session || "",
+      entryCondition: data.entryCondition || "",
+      invalidation: Number(data.invalidation) || 0.0,
+      target: Number(data.target) || 0.0,
+      outcome: data.outcome,
+      lesson: data.lesson || "",
+      probabilityWeight: Number(data.probabilityWeight) || 0.5,
+      createdAt: data.createdAt || new Date().toISOString()
+    };
+    await dbSetDoc("pattern_registry", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save pattern registry entry" });
+  }
+});
+
+// 4. Macro Context Snapshots
+app.get("/api/lattice/macro", async (req, res) => {
+  try {
+    const list = await dbGetDocs("macro_context_snapshots");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch macro snapshots" });
+  }
+});
+
+app.post("/api/lattice/macro", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.timestamp) {
+      return res.status(400).json({ error: "Missing required fields: id, timestamp" });
+    }
+    const record = {
+      id: data.id,
+      timestamp: data.timestamp,
+      yieldCurveStatus: data.yieldCurveStatus || "",
+      dxyTrend: data.dxyTrend || "",
+      vixValue: Number(data.vixValue) || 15.0,
+      fedPolicyBias: data.fedPolicyBias || "",
+      newsEventImpact: data.newsEventImpact || "",
+      createdAt: data.createdAt || new Date().toISOString()
+    };
+    await dbSetDoc("macro_context_snapshots", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save macro snapshot" });
+  }
+});
+
+// 5. Outcome Feedback
+app.get("/api/lattice/feedback", async (req, res) => {
+  try {
+    const list = await dbGetDocs("outcome_feedback");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch outcome feedback items" });
+  }
+});
+
+app.post("/api/lattice/feedback", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.patternId || !data.asset || !data.actualOutcome) {
+      return res.status(400).json({ error: "Missing required fields: id, patternId, asset, actualOutcome" });
+    }
+    const record = {
+      id: data.id,
+      patternId: data.patternId,
+      asset: data.asset,
+      predictedBias: data.predictedBias || "",
+      actualOutcome: data.actualOutcome,
+      deviation: Number(data.deviation) || 0.0,
+      weightAdjustmentApplied: Number(data.weightAdjustmentApplied) || 0.0,
+      unsolicitedNotes: data.unsolicitedNotes || "",
+      createdAt: data.createdAt || new Date().toISOString()
+    };
+    await dbSetDoc("outcome_feedback", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save outcome feedback loop" });
+  }
+});
+
+// 6. Operator Overrides
+app.get("/api/lattice/overrides", async (req, res) => {
+  try {
+    const list = await dbGetDocs("operator_overrides");
+    res.json(list);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to fetch operator overrides" });
+  }
+});
+
+app.post("/api/lattice/overrides", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id || !data.asset || data.approvedByOperator === undefined) {
+      return res.status(400).json({ error: "Missing required fields: id, asset, approvedByOperator" });
+    }
+    const record = {
+      id: data.id,
+      asset: data.asset,
+      timeframe: data.timeframe || "",
+      overrideReason: data.overrideReason || "",
+      approvedByOperator: Boolean(data.approvedByOperator),
+      sealSignature: data.sealSignature || "",
+      timestamp: data.timestamp || new Date().toISOString()
+    };
+    await dbSetDoc("operator_overrides", record.id, record);
+    res.json({ success: true, record });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Failed to save operator override" });
   }
 });
 

@@ -90,6 +90,78 @@ service cloud.firestore {
         && c.password is string && c.password.size() <= 512;
     }
 
+    function isValidAssetProfile(a) {
+      return a.id is string && a.id.size() <= 128
+        && a.name is string && a.name.size() <= 256
+        && (a.get('preferredSessions', []) is list)
+        && (a.get('failedSetupsCount', 0) is number)
+        && (a.get('successfulConfluencesCount', 0) is number)
+        && (a.get('diNapoliFibResponseWeight', 0.0) is number)
+        && (a.get('macroDrivers', []) is list)
+        && (a.get('liquidityHabits', '') is string && a.get('liquidityHabits', '').size() <= 4096);
+    }
+
+    function isValidCustodyTimeframeState(s) {
+      return s.id is string && s.id.size() <= 128
+        && s.assetId is string && s.assetId.size() <= 128
+        && s.timeframe is string && (s.timeframe == 'D1' || s.timeframe == 'H4' || s.timeframe == 'M15' || s.timeframe == 'M5')
+        && (s.get('role', '') is string && s.get('role', '').size() <= 256)
+        && (s.get('authorityWeight', 0.0) is number)
+        && (s.get('currentFinding', '') is string && s.get('currentFinding', '').size() <= 4096)
+        && (s.get('invalidationLine', 0.0) is number);
+    }
+
+    function isValidPatternRegistryEntry(p) {
+      return p.id is string && p.id.size() <= 128
+        && p.name is string && (
+             p.name == 'X-Break Redistribution' || 
+             p.name == 'ABCD Paddle' || 
+             p.name == '382 Trap' || 
+             p.name == '618 Continuation' || 
+             p.name == 'Order Block Mitigation' || 
+             p.name == 'Vector Candle Trap'
+           )
+        && p.asset is string && p.asset.size() <= 128
+        && p.outcome is string && (p.outcome == 'SUCCESS' || p.outcome == 'FAILURE')
+        && (p.get('timeframe', '') is string && p.get('timeframe', '').size() <= 64)
+        && (p.get('session', '') is string && p.get('session', '').size() <= 128)
+        && (p.get('entryCondition', '') is string && p.get('entryCondition', '').size() <= 1024)
+        && (p.get('invalidation', 0.0) is number)
+        && (p.get('target', 0.0) is number)
+        && (p.get('lesson', '') is string && p.get('lesson', '').size() <= 4096)
+        && (p.get('probabilityWeight', 0.0) is number);
+    }
+
+    function isValidMacroContextSnapshot(m) {
+      return m.id is string && m.id.size() <= 128
+        && m.timestamp is string && m.timestamp.size() <= 128
+        && (m.get('yieldCurveStatus', '') is string && m.get('yieldCurveStatus', '').size() <= 256)
+        && (m.get('dxyTrend', '') is string && m.get('dxyTrend', '').size() <= 128)
+        && (m.get('vixValue', 0.0) is number)
+        && (m.get('fedPolicyBias', '') is string && m.get('fedPolicyBias', '').size() <= 256)
+        && (m.get('newsEventImpact', '') is string && m.get('newsEventImpact', '').size() <= 4096);
+    }
+
+    function isValidOutcomeFeedbackItem(f) {
+      return f.id is string && f.id.size() <= 128
+        && f.patternId is string && f.patternId.size() <= 128
+        && f.asset is string && f.asset.size() <= 128
+        && f.actualOutcome is string && f.actualOutcome.size() <= 256
+        && (f.get('predictedBias', '') is string && f.get('predictedBias', '').size() <= 128)
+        && (f.get('deviation', 0.0) is number)
+        && (f.get('weightAdjustmentApplied', 0.0) is number)
+        && (f.get('unsolicitedNotes', '') is string && f.get('unsolicitedNotes', '').size() <= 4096);
+    }
+
+    function isValidOperatorOverride(o) {
+      return o.id is string && o.id.size() <= 128
+        && o.asset is string && o.asset.size() <= 128
+        && o.approvedByOperator is bool
+        && (o.get('timeframe', '') is string && o.get('timeframe', '').size() <= 64)
+        && (o.get('overrideReason', '') is string && o.get('overrideReason', '').size() <= 4096)
+        && (o.get('sealSignature', '') is string && o.get('sealSignature', '').size() <= 512);
+    }
+
     // 3. Custody Packets Collection
     match /custody_packets/{packetId} {
       allow read: if true; // Publicly readable for cockpit dashboard visibility
@@ -137,6 +209,48 @@ service cloud.firestore {
     match /cme_credentials/{credentialId} {
       allow read: if true;
       allow write: if isValidId(credentialId) && isValidCmeCredential(request.resource.data);
+    }
+
+    // 10. Asset Profiles Collection
+    match /asset_profiles/{assetId} {
+      allow read: if true;
+      allow create, update: if isValidId(assetId) && isValidAssetProfile(request.resource.data);
+      allow delete: if isValidId(assetId);
+    }
+
+    // 11. Custody Timeframe States Collection
+    match /custody_timeframe_states/{stateId} {
+      allow read: if true;
+      allow create, update: if isValidId(stateId) && isValidCustodyTimeframeState(request.resource.data);
+      allow delete: if isValidId(stateId);
+    }
+
+    // 12. Pattern Registry Collection
+    match /pattern_registry/{entryId} {
+      allow read: if true;
+      allow create, update: if isValidId(entryId) && isValidPatternRegistryEntry(request.resource.data);
+      allow delete: if isValidId(entryId);
+    }
+
+    // 13. Macro Context Snapshots Collection
+    match /macro_context_snapshots/{snapshotId} {
+      allow read: if true;
+      allow create, update: if isValidId(snapshotId) && isValidMacroContextSnapshot(request.resource.data);
+      allow delete: if isValidId(snapshotId);
+    }
+
+    // 14. Outcome Feedback Collection
+    match /outcome_feedback/{feedbackId} {
+      allow read: if true;
+      allow create, update: if isValidId(feedbackId) && isValidOutcomeFeedbackItem(request.resource.data);
+      allow delete: if isValidId(feedbackId);
+    }
+
+    // 15. Operator Overrides Collection
+    match /operator_overrides/{overrideId} {
+      allow read: if true;
+      allow create, update: if isValidId(overrideId) && isValidOperatorOverride(request.resource.data);
+      allow delete: if isValidId(overrideId);
     }
   }
 }

@@ -23,7 +23,12 @@ import {
   Bookmark,
   BookOpen,
   PieChart,
-  GitCommit
+  GitCommit,
+  Network,
+  Brain,
+  History,
+  PenTool,
+  Zap
 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import FloatingLiveFeedTerminal from "./FloatingLiveFeedTerminal";
@@ -280,7 +285,7 @@ export default function WallStreetWorkspace() {
   const [m15Observation, setM15Observation] = useState<string>("");
   const [m5Observation, setM5Observation] = useState<string>("");
 
-  const [activeTab, setActiveTab] = useState<"ingress" | "agents" | "synthesis" | "report">("ingress");
+  const [activeTab, setActiveTab] = useState<"ingress" | "agents" | "synthesis" | "report" | "lattice">("ingress");
   
   // Audit engine and state levels
   const [packetSealed, setPacketSealed] = useState<boolean>(false);
@@ -321,6 +326,68 @@ export default function WallStreetWorkspace() {
     setGateLocked(true);
     setIngressLog([`[SYSTEM] Asset switched to: ${activePreset.name} (${activePreset.ticker})`]);
   }, [selectedAssetId]);
+
+  // Market Memory Lattice React States
+  const [assetProfiles, setAssetProfiles] = useState<any[]>([]);
+  const [timeframeStates, setTimeframeStates] = useState<any[]>([]);
+  const [patternRegistry, setPatternRegistry] = useState<any[]>([]);
+  const [macroContexts, setMacroContexts] = useState<any[]>([]);
+  const [outcomeFeedbacks, setOutcomeFeedbacks] = useState<any[]>([]);
+  const [operatorOverrides, setOperatorOverrides] = useState<any[]>([]);
+  const [latticeLoading, setLatticeLoading] = useState<boolean>(false);
+  const [latticeError, setLatticeError] = useState<string>("");
+
+  const fetchLatticeData = async () => {
+    setLatticeLoading(true);
+    setLatticeError("");
+    try {
+      const getJson = async (url: string) => {
+        try {
+          console.log(`[Lattice Sync] Fetching: ${url}`);
+          const res = await fetch(url);
+          if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
+          }
+          const contentType = res.headers.get("content-type") || "";
+          if (!contentType.includes("application/json")) {
+            const text = await res.text().catch(() => "");
+            throw new Error(`Expected JSON but got: ${contentType}. Raw: ${text.slice(0, 100)}`);
+          }
+          return await res.json();
+        } catch (err: any) {
+          console.error(`[Lattice Sync Error] Path ${url} failed:`, err);
+          // Return empty array on failure to prevent entire cascade from failing
+          return [];
+        }
+      };
+
+      const [profilesRes, tfRes, patRes, macroRes, fbRes, ovRes] = await Promise.all([
+        getJson("/api/lattice/asset-profiles"),
+        getJson("/api/lattice/timeframe-states"),
+        getJson("/api/lattice/patterns"),
+        getJson("/api/lattice/macro"),
+        getJson("/api/lattice/feedback"),
+        getJson("/api/lattice/overrides"),
+      ]);
+
+      setAssetProfiles(Array.isArray(profilesRes) ? profilesRes : []);
+      setTimeframeStates(Array.isArray(tfRes) ? tfRes : []);
+      setPatternRegistry(Array.isArray(patRes) ? patRes : []);
+      setMacroContexts(Array.isArray(macroRes) ? macroRes : []);
+      setOutcomeFeedbacks(Array.isArray(fbRes) ? fbRes : []);
+      setOperatorOverrides(Array.isArray(ovRes) ? ovRes : []);
+    } catch (e: any) {
+      console.error("Failed to load market memory lattice", e);
+      setLatticeError(e.message || "Network error loading lattice collections.");
+    } finally {
+      setLatticeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLatticeData();
+  }, []);
 
   // Derived Packet ID and Admissibility Engine
   const packetId = useMemo(() => {
@@ -1443,6 +1510,22 @@ export default function WallStreetWorkspace() {
         >
           <Compass className="h-3.5 w-3.5" /> 4. Field State Report
         </button>
+
+        <ChevronRight className="h-3 w-3 text-slate-600 hidden sm:block" />
+
+        <button
+          onClick={() => {
+            setActiveTab("lattice");
+            fetchLatticeData();
+          }}
+          className={`px-4 py-1.5 rounded-lg text-[10px] font-mono tracking-wider transition-all uppercase flex items-center gap-1.5 border cursor-pointer ${
+            activeTab === "lattice"
+              ? "bg-gradient-to-r from-emerald-955 to-emerald-900/30 text-emerald-400 border-emerald-900/40 font-bold"
+              : "text-slate-400 hover:text-slate-200 hover:bg-[#131721] border-transparent"
+          }`}
+        >
+          <Network className="h-3.5 w-3.5 text-emerald-450" /> 5. Memory Lattice
+        </button>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 items-stretch">
@@ -2561,6 +2644,353 @@ export default function WallStreetWorkspace() {
                     <Download className="h-4 w-4" /> [ EXPORT FIELD STATE PDF ]
                   </button>
                 </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 5: DOCTRINE MEMORY LATTICE */}
+          {activeTab === "lattice" && (
+            <div className="bg-[#12161f] border border-[#212836] rounded-xl p-5 shadow-lg flex flex-col gap-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-emerald-500/5 rounded-full blur-[40px] pointer-events-none" />
+
+              <div className="border-b border-[#212836] pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Brain className="h-4.5 w-4.5 text-emerald-400" />
+                    <h2 className="text-xs font-mono font-extrabold uppercase tracking-widest text-slate-200">
+                      WallStreet Core Doctrine Memory Lattice
+                    </h2>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-mono mt-1">
+                    Continuous self-optimizing database of asset profiles, feedback logs, and operator override ledgers.
+                  </p>
+                </div>
+                <button
+                  onClick={fetchLatticeData}
+                  disabled={latticeLoading}
+                  className="px-3 py-1.5 bg-[#171c26] hover:bg-[#202736] border border-[#2e374d] text-slate-350 text-[10px] font-mono rounded flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className={`h-3 w-3 ${latticeLoading ? 'animate-spin' : ''}`} /> Sync DB Lattice
+                </button>
+              </div>
+
+              {latticeError && (
+                <div className="p-3 bg-red-950/40 border border-red-500/30 text-rose-300 text-[10px] font-mono rounded-lg">
+                  ⚠️ Error syncing lattice collections: {latticeError}
+                </div>
+              )}
+
+              {/* SECTION 1: ASSET PROFILE MEMORIES */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+                  <Bookmark className="h-3.5 w-3.5 text-emerald-405" />
+                  <span className="text-[10.5px] font-mono font-bold text-slate-200 uppercase tracking-wider">I. Instrument Profile Memories (Sovereign Cognition)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {assetProfiles.map((prof: any) => (
+                    <div key={prof.id} className="p-3 bg-[#0b0e14] border border-[#1d2433] rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-black text-amber-400">{prof.id} — {prof.name}</span>
+                        <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-900/30 font-bold">
+                          Fidelity Weight: {(prof.diNapoliFibResponseWeight * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="text-[10px] space-y-1 text-slate-400">
+                        <p><strong className="text-slate-300">Preferred Sessions:</strong> {prof.preferredSessions?.join(", ") || "None specified"}</p>
+                        <p><strong className="text-slate-300">Continuous Confluences:</strong> {prof.successfulConfluencesCount || 0} Successful / {prof.failedSetupsCount || 0} Failed</p>
+                        <p><strong className="text-slate-300">Macro Drivers:</strong> {prof.macroDrivers?.join(", ") || "None specified"}</p>
+                        <p><strong className="text-slate-300">Liquidity Habits:</strong> <span className="italic text-slate-350">"{prof.liquidityHabits}"</span></p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION 2: TIMEFRAME CUSTODY SEQUENCE */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+                  <Database className="h-3.5 w-3.5 text-indigo-405" />
+                  <span className="text-[10.5px] font-mono font-bold text-slate-200 uppercase tracking-wider">II. Hierarchical Timeframe State Sequence</span>
+                </div>
+                <div className="p-3 bg-[#090b0e] border border-[#1b212f]/80 rounded-xl space-y-3">
+                  <div className="bg-[#241a0e]/45 border border-amber-500/25 p-3 rounded-lg text-[10px] text-amber-300/90 italic font-mono flex items-start gap-1">
+                    <span>💡</span>
+                    <span>
+                      <strong className="text-amber-200 uppercase not-italic">Sequence Sequence Principle:</strong> D1/H4 bounds hold supreme decision authority. M15/M5 sit at lower layers. M5 weight is numerically small (0.10) and has <strong>0 thesis generation authority</strong>; its role is strictly valid confirmation evidence for the sequence.
+                    </span>
+                  </div>
+                  <div className="relative pl-4 space-y-3 border-l-2 border-[#1e2636]">
+                    {timeframeStates.length === 0 ? (
+                      <p className="text-[10px] text-slate-500 italic">No timeframe states configured. Initialize presets above.</p>
+                    ) : (
+                      timeframeStates.map((state: any) => {
+                        let badgeColor = "bg-rose-950/55 text-rose-300 border-rose-900/40";
+                        if (state.timeframe === "D1") badgeColor = "bg-sky-950/50 text-sky-350 border-sky-900/40 pb-0.5";
+                        else if (state.timeframe === "H4") badgeColor = "bg-indigo-950/50 text-indigo-300 border-indigo-900/40";
+                        else if (state.timeframe === "M15") badgeColor = "bg-amber-955/50 text-amber-300 border-amber-900/40";
+                        else if (state.timeframe === "M5") badgeColor = "bg-teal-950/50 text-teal-300 border-teal-900/40";
+
+                        return (
+                          <div key={state.id} className="relative space-y-1">
+                            <span className="absolute -left-[21px] top-0.5 h-2 w-2 rounded-full bg-indigo-500" />
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[9px] font-mono font-bold uppercase tracking-wider border px-1.5 py-0.5 rounded ${badgeColor}`}>
+                                {state.timeframe} — {state.role}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-400 font-bold">
+                                Asset: {state.assetId} | Weight Authority: {state.authorityWeight}
+                              </span>
+                            </div>
+                            <p className="text-[10px] font-mono text-slate-300 pl-1">{state.currentFinding}</p>
+                            <p className="text-[9px] font-mono text-rose-450 pl-1">Invalidation Line: ${state.invalidationLine}</p>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: SPECIFIC PATTERN REGISTRY & PROBABILITY */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+                  <Zap className="h-3.5 w-3.5 text-amber-405" />
+                  <span className="text-[10.5px] font-mono font-bold text-slate-200 uppercase tracking-wider">III. Specialist Pattern Registry index</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 select-none">
+                  {patternRegistry.map((pat: any) => (
+                    <div key={pat.id} className="p-3 bg-[#090b10] border border-[#1c2230] rounded-lg flex flex-col gap-2">
+                      <div className="flex items-center justify-between border-b border-slate-800/60 pb-1.5">
+                        <span className="text-[10.5px] font-mono font-black text-slate-100 truncate">{pat.name}</span>
+                        <span className="text-[9.5px] font-mono text-indigo-400 font-bold">{pat.asset} ({pat.timeframe})</span>
+                      </div>
+                      <div className="text-[9.5px] font-mono space-y-1 text-slate-400">
+                        <p><strong className="text-slate-300">Session:</strong> {pat.session}</p>
+                        <p className="line-clamp-2"><strong className="text-slate-300">Trigger:</strong> {pat.entryCondition}</p>
+                        <div className="flex items-center justify-between text-[9px] bg-[#121621] p-1 rounded font-bold">
+                          <span className="text-slate-400">P(Success)</span>
+                          <span className="text-emerald-450">{(pat.probabilityWeight * 100).toFixed(0)}%</span>
+                        </div>
+                        <p className="text-slate-500 italic pl-1 leading-snug">"Lesson: {pat.lesson}"</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION 4: OUTCOME FEEDBACK LOOP */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                
+                {/* Historical Log list */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+                    <History className="h-3.5 w-3.5 text-emerald-450" />
+                    <span className="text-[10.5px] font-mono font-bold text-slate-200 uppercase tracking-wider">IV. Outcome Feedback Logs</span>
+                  </div>
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                    {outcomeFeedbacks.map((fb: any) => (
+                      <div key={fb.id} className="p-3 bg-[#0a0c12] border border-[#1b212f] rounded-lg text-[9.5px] font-mono text-slate-400 space-y-1">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-bold text-slate-250 font-mono">Pattern ID: {fb.patternId}</span>
+                          <span className={`font-black ${fb.actualOutcome === 'SUCCESS' ? 'text-emerald-400' : 'text-rose-400'}`}>{fb.actualOutcome}</span>
+                        </div>
+                        <p>Asset: <strong className="text-slate-300">{fb.asset}</strong> | Predicted Bias: <strong className="text-slate-300">{fb.predictedBias}</strong></p>
+                        <p>Weight Adjust Applied: <strong className="text-emerald-455">+{fb.weightAdjustmentApplied}</strong></p>
+                        {fb.unsolicitedNotes && <p className="italic text-slate-500">"{fb.unsolicitedNotes}"</p>}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add Outcome Feedback Form */}
+                  <div className="p-3 bg-[#0f121b] border border-slate-800 rounded-lg space-y-2.5">
+                    <span className="text-[10px] font-mono font-extrabold text-[#e2e8f0] block uppercase border-b border-slate-800 pb-1">Record Outcome Feedback</span>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Pattern ID" 
+                        id="new-outcome-pat-id"
+                        defaultValue="pat-gc-xbreak"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 uppercase font-mono"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Asset" 
+                        id="new-outcome-asset"
+                        defaultValue="GC"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 uppercase font-mono"
+                      />
+                      <select 
+                        id="new-outcome-status"
+                        className="p-1 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 font-mono"
+                      >
+                        <option value="SUCCESS">SUCCESS</option>
+                        <option value="FAILURE">FAILURE</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Predicted Bias" 
+                        id="new-outcome-bias"
+                        defaultValue="BULLISH"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 uppercase font-mono"
+                      />
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        placeholder="Weight adjustment" 
+                        id="new-outcome-weight"
+                        defaultValue="0.02"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 font-mono"
+                      />
+                    </div>
+
+                    <input 
+                      type="text" 
+                      placeholder="Operator Lessons Captured" 
+                      id="new-outcome-notes"
+                      className="w-full p-1.5 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 font-mono"
+                    />
+
+                    <button 
+                      onClick={async () => {
+                        const patId = (document.getElementById("new-outcome-pat-id") as HTMLInputElement)?.value || "";
+                        const asset = (document.getElementById("new-outcome-asset") as HTMLInputElement)?.value || "";
+                        const status = (document.getElementById("new-outcome-status") as HTMLSelectElement)?.value || "SUCCESS";
+                        const bias = (document.getElementById("new-outcome-bias") as HTMLInputElement)?.value || "";
+                        const weight = Number((document.getElementById("new-outcome-weight") as HTMLInputElement)?.value) || 0.02;
+                        const notes = (document.getElementById("new-outcome-notes") as HTMLInputElement)?.value || "";
+
+                        if (!patId || !asset) return;
+                        
+                        try {
+                          const res = await fetch("/api/lattice/feedback", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              id: `FB-ENTRY-${Date.now()}`,
+                              patternId: patId,
+                              asset,
+                              predictedBias: bias,
+                              actualOutcome: status,
+                              deviation: 0.02,
+                              weightAdjustmentApplied: weight,
+                              unsolicitedNotes: notes
+                            })
+                          });
+                          if(res.ok) {
+                            fetchLatticeData();
+                            const notesInput = document.getElementById("new-outcome-notes") as HTMLInputElement;
+                            if (notesInput) notesInput.value = "";
+                          }
+                        } catch(e) {
+                          console.error(e);
+                        }
+                      }}
+                      className="w-full py-1 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 text-slate-100 rounded text-[10px] font-mono font-bold cursor-pointer"
+                    >
+                      Record Feedback Entry & Adjust Weights
+                    </button>
+                  </div>
+                </div>
+
+                {/* Operator Mandates and Overrides */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+                    <PenTool className="h-3.5 w-3.5 text-amber-450" />
+                    <span className="text-[10.5px] font-mono font-bold text-slate-200 uppercase tracking-wider">V. Operator Sovereignty Mandates</span>
+                  </div>
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                    {operatorOverrides.map((ov: any) => (
+                      <div key={ov.id} className="p-3 bg-[#110e14] border border-[#261f2f] rounded-lg text-[9.5px] font-mono text-slate-400 space-y-1 relative">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-extrabold text-amber-450 uppercase">Asset Mode: {ov.asset}</span>
+                          <span className="text-[9px] bg-red-955 text-rose-300 border border-rose-900/45 px-1 rounded">OVERRIDE</span>
+                        </div>
+                        <p><strong className="text-slate-350">Reason:</strong> {ov.overrideReason}</p>
+                        <p><strong className="text-slate-350">Authority Seal:</strong> <span className="text-amber-300 font-extrabold font-mono text-[9px]">{ov.sealSignature}</span></p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Issue Override Form */}
+                  <div className="p-3 bg-[#18131e] border border-indigo-950/60 rounded-lg space-y-2.5">
+                    <span className="text-[10px] font-mono font-extrabold text-indigo-200 block uppercase border-b border-indigo-950 pb-1">Issue Sovereign Override</span>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Asset code (GC/NQ/BTC)" 
+                        id="override-asset"
+                        defaultValue="GC"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 uppercase font-mono"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Timeframe context" 
+                        id="override-tf"
+                        defaultValue="D1"
+                        className="p-1 px-2 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 uppercase font-mono"
+                      />
+                    </div>
+
+                    <input 
+                      type="text" 
+                      placeholder="Override reason or forced mandate summary" 
+                      id="override-reason"
+                      className="w-full p-1.5 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 font-mono"
+                    />
+
+                    <input 
+                      type="text" 
+                      placeholder="Sovereignty signature code" 
+                      id="override-seal"
+                      defaultValue="OP-SEAL-8891-ROD-SOVEREIGN"
+                      className="w-full p-1.5 bg-[#090b10] border border-slate-800 rounded text-[10px] text-slate-200 font-mono font-bold"
+                    />
+
+                    <button 
+                      onClick={async () => {
+                        const asset = (document.getElementById("override-asset") as HTMLInputElement)?.value || "";
+                        const tf = (document.getElementById("override-tf") as HTMLInputElement)?.value || "";
+                        const reason = (document.getElementById("override-reason") as HTMLInputElement)?.value || "";
+                        const seal = (document.getElementById("override-seal") as HTMLInputElement)?.value || "";
+
+                        if (!asset || !reason) return;
+
+                        try {
+                          const res = await fetch("/api/lattice/overrides", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              id: `OVERRIDE-GEN-${Date.now()}`,
+                              asset,
+                              timeframe: tf,
+                              overrideReason: reason,
+                              approvedByOperator: true,
+                              sealSignature: seal,
+                              timestamp: new Date().toISOString()
+                            })
+                          });
+                          if(res.ok) {
+                            fetchLatticeData();
+                            const reasonInput = document.getElementById("override-reason") as HTMLInputElement;
+                            if (reasonInput) reasonInput.value = "";
+                          }
+                        } catch(e) {
+                          console.error(e);
+                        }
+                      }}
+                      className="w-full py-1.5 bg-indigo-700 hover:bg-indigo-600 border border-indigo-500 text-slate-100 rounded text-[10px] font-mono font-bold cursor-pointer"
+                    >
+                      Sign Sovereign Override & Dispatch Lock
+                    </button>
+                  </div>
+                </div>
+
               </div>
 
             </div>
