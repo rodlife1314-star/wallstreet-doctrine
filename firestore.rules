@@ -162,6 +162,18 @@ service cloud.firestore {
         && (o.get('sealSignature', '') is string && o.get('sealSignature', '').size() <= 512);
     }
 
+    function isValidMarketSnapshot(s) {
+      return s.id is string && s.id.size() <= 128
+        && s.asset is string && s.asset.size() <= 128
+        && s.timestamp is string && s.timestamp.size() <= 128
+        && (s.price.get('spot', 0.0) is number || s.price.get('level', 0.0) is number)
+        && s.rates.get('realYield', 0.0) is number
+        && s.dollar.get('trend', '') is string
+        && s.volatility.get('vix', 0.0) is number
+        && s.sourceConfidence.get('source', '') is string
+        && s.sourceConfidence.get('score', 0) is number;
+    }
+
     // 3. Custody Packets Collection
     match /custody_packets/{packetId} {
       allow read: if true; // Publicly readable for cockpit dashboard visibility
@@ -251,6 +263,13 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isValidId(overrideId) && isValidOperatorOverride(request.resource.data);
       allow delete: if isValidId(overrideId);
+    }
+
+    // 16. Market Telemetry Snapshots Collection
+    match /market_snapshots/{snapshotId} {
+      allow read: if true;
+      allow create, update: if isValidId(snapshotId) && isValidMarketSnapshot(request.resource.data);
+      allow delete: if isValidId(snapshotId);
     }
   }
 }

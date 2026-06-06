@@ -483,6 +483,60 @@
         "asset",
         "approvedByOperator"
       ]
+    },
+    "market_snapshot": {
+      "title": "MarketSnapshot",
+      "description": "A structural market-state telemetry snapshot ingested on the WallStreet switch-on port.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "asset": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "price": {
+          "type": "object"
+        },
+        "rates": {
+          "type": "object"
+        },
+        "dollar": {
+          "type": "object"
+        },
+        "volatility": {
+          "type": "object"
+        },
+        "openInterest": {
+          "type": "object"
+        },
+        "macro": {
+          "type": "object"
+        },
+        "sourceConfidence": {
+          "type": "object"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "asset",
+        "timestamp",
+        "price",
+        "rates",
+        "dollar",
+        "volatility",
+        "openInterest",
+        "macro",
+        "sourceConfidence"
+      ]
     }
   },
   "firestore": {
@@ -537,6 +591,10 @@
     "operator_overrides/{overrideId}": {
       "schema": "operator_override",
       "description": "Sovereign signature tracking override data on the ledger"
+    },
+    "market_snapshots/{snapshotId}": {
+      "schema": "market_snapshot",
+      "description": "Structured market state telemetry snapshots logged on the switch-on port"
     }
   }
 }

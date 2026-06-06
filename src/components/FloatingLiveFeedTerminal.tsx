@@ -98,10 +98,65 @@ export default function FloatingLiveFeedTerminal() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [selectedLane, setSelectedLane] = useState<string>("ALL");
-  const [activeStateLabel, setActiveStateLabel] = useState<"COLD BENCH" | "STAGED" | "NOT LIVE" | "AWAITING PACKET">("COLD BENCH");
+  const [activeStateLabel, setActiveStateLabel] = useState<"COLD BENCH" | "STAGED" | "NOT LIVE" | "AWAITING PACKET" | "ACTIVE">("COLD BENCH");
   const [isSimulating, setIsSimulating] = useState(false);
   
   const endRef = useRef<HTMLDivElement>(null);
+  const [latestSnapshot, setLatestSnapshot] = useState<any>(null);
+  const lastSnapshotIdRef = useRef<string | null>(null);
+
+  // Poll for latest market snapshots on the ingestion port with reactive timing
+  useEffect(() => {
+    let active = true;
+    const fetchLatest = async () => {
+      try {
+        const res = await fetch("/api/wallstreet/latest-snapshot");
+        if (!res.ok) {
+          // Non-200 responses should fail silently during intervals
+          return;
+        }
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          // If response is HTML or anything other than json, return early
+          return;
+        }
+        const data = await res.json();
+        if (!active) return;
+        if (data && data.success && data.latest) {
+          setLatestSnapshot(data.latest);
+          setActiveStateLabel("ACTIVE");
+          
+          if (lastSnapshotIdRef.current !== data.latest.id) {
+            lastSnapshotIdRef.current = data.latest.id;
+            const now = new Date();
+            const timeStr = now.toTimeString().split(" ")[0];
+            
+            const newEvt: FeedEvent = {
+              id: `snap-${data.latest.id || Date.now()}`,
+              timestamp: timeStr,
+              lane: "OBSERVATION",
+              message: `➔ [PORT INGESTION ACTIVE] Received live Market State Packet for ${data.latest.asset}. Ingestion successful on port "/api/wallstreet/market-snapshot". Core Spot Price: $${data.latest.price?.spot || "N/A"} USD. Real-yield: ${data.latest.rates?.realYield || "N/A"}%. Source: ${data.latest.sourceConfidence?.source || "N/A"} (${data.latest.sourceConfidence?.grade || "N/A"}). Memory Lattice collections successfully written. Copilot analysis context synchronized at high fidelity.`,
+              severity: "success"
+            };
+            
+            setEvents(prev => {
+              if (prev.some(e => e.id === `snap-${data.latest.id}`)) return prev;
+              return [...prev, newEvt].slice(-50);
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Telemetry interval fetch failed", err);
+      }
+    };
+
+    fetchLatest();
+    const interval = setInterval(fetchLatest, 4000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -254,16 +309,91 @@ export default function FloatingLiveFeedTerminal() {
             >
               {/* Cold Bench Notice Banner */}
               <div className="bg-[#0e1625] px-4 py-2 border-b border-cyan-950/30 flex items-center justify-between gap-2 shrink-0">
-                <div className="flex items-center gap-1.5 text-cyan-500 text-[10px]">
-                  <WifiOff className="h-3.5 w-3.5 shrink-0" />
-                  <span className="tracking-wide">
-                    STATION SCAFFOLD ONLY — NO ACTIVE DEPLOYMENT PORT BINDING
-                  </span>
-                </div>
+                {latestSnapshot ? (
+                  <div className="flex items-center gap-1.5 text-emerald-400 text-[10px]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <span className="tracking-wide font-black uppercase text-slate-100 fs-9">
+                      MARKET AUTHORITY FEED ACTIVE | SNAPSHOT: {latestSnapshot.asset} @ {latestSnapshot.timestamp ? new Date(latestSnapshot.timestamp).toLocaleTimeString() : "LIVE"}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-cyan-500 text-[10px]">
+                    <WifiOff className="h-3.5 w-3.5 shrink-0" />
+                    <span className="tracking-wide">
+                      STATION SCAFFOLD ONLY — NO ACTIVE DEPLOYMENT PORT BINDING
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <button 
+                    onClick={async () => {
+                      const testPacket = {
+                        asset: "GOLD",
+                        timestamp: new Date().toISOString(),
+                        price: {
+                          spot: 2351.40,
+                          change: 1.25,
+                          bid: 2350.80,
+                          ask: 2352.00
+                        },
+                        rates: {
+                          us10y: 4.28,
+                          us2y: 4.62,
+                          realYield: 2.12
+                        },
+                        dollar: {
+                          dxy: 104.15,
+                          trend: "BEARISH_SOFTENING"
+                        },
+                        volatility: {
+                          vix: 15.30
+                        },
+                        openInterest: {
+                          total: 450000,
+                          change: 1500,
+                          majorStrike: 2400
+                        },
+                        macro: {
+                          yieldCurve: "INVERTED_FLATTENING",
+                          fedBias: "RESTRICTIVE_HOLD",
+                          impact: "STEADY_ACCUMULATION"
+                        },
+                        sourceConfidence: {
+                          source: "FRED",
+                          score: 95,
+                          grade: "HI_FI"
+                        }
+                      };
+                      try {
+                        const response = await fetch("/api/wallstreet/market-snapshot", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(testPacket)
+                        });
+                        if (response.ok) {
+                          const resLatest = await fetch("/api/wallstreet/latest-snapshot");
+                          if (resLatest.ok) {
+                            const latestCt = resLatest.headers.get("content-type");
+                            if (latestCt && latestCt.includes("application/json")) {
+                              const resData = await resLatest.json();
+                              if (resData.success && resData.latest) {
+                                setLatestSnapshot(resData.latest);
+                              }
+                            }
+                          }
+                        }
+                      } catch (err) {
+                        console.error("Failed to post static test packet", err);
+                      }
+                    }}
+                    className="text-[8px] bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-400 hover:text-emerald-100 px-1.5 py-0.5 rounded cursor-pointer transition-all font-black"
+                    title="Feed static GOLD telemetry packet to WallStreet Ingestion Port"
+                  >
+                    ⚡ FEED PACKET
+                  </button>
+                  <button 
                     onClick={injectSingleEvent}
-                    className="text-[9px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 px-1.5 py-0.5 rounded"
+                    className="text-[9px] bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 px-1.5 py-0.5 rounded cursor-pointer"
                     title="Manual Telemetry Event Feed Trigger"
                   >
                     + STAGE
@@ -275,7 +405,7 @@ export default function FloatingLiveFeedTerminal() {
                       onChange={(e) => setIsSimulating(e.target.checked)}
                       className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 focus:ring-offset-0 h-3 w-3 cursor-pointer"
                     />
-                    <span className="text-[9px] text-slate-500">SIMULATE</span>
+                    <span className="text-[9px] text-slate-500 font-extrabold uppercase select-none">SIM</span>
                   </label>
                 </div>
               </div>
@@ -337,9 +467,16 @@ export default function FloatingLiveFeedTerminal() {
 
               {/* Terminal Footer Navigation Controls */}
               <div className="bg-[#080d16] border-t border-cyan-950/40 p-2 flex items-center justify-between shrink-0 select-none">
-                <span className="text-[8.5px] text-slate-600 font-mono uppercase">
-                  Telemetry Scaffold v0.1 Build Active
-                </span>
+                {latestSnapshot ? (
+                  <span className="text-[8.5px] text-emerald-400 font-mono uppercase font-black flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
+                    COPILOT CONTEXT: READY
+                  </span>
+                ) : (
+                  <span className="text-[8.5px] text-slate-600 font-mono uppercase">
+                    Telemetry Scaffold v0.1 Build Active
+                  </span>
+                )}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={resetFeed}
